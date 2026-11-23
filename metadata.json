@@ -1,0 +1,6 @@
+{
+  "name": "Scribe Design Studio",
+  "description": "A local-first, privacy-respecting design and canvas studio powered by Fabric.js and IndexedDB, part of the Luqa ecosystem.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
