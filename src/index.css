@@ -1,0 +1,366 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --theme-accent: #6366f1;
+    --theme-accent-rgb: 99, 102, 241;
+    --theme-ambient-1: rgba(99, 102, 241, 0.12);
+    --theme-ambient-2: rgba(168, 85, 247, 0.08);
+    --editor-theme-bg: #eef0f4;
+    --editor-chrome-bar-bg: rgba(10, 10, 12, 0.90);
+    --editor-chrome-rail-bg: rgba(10, 10, 12, 0.90);
+    --editor-chrome-panel-bg: rgba(13, 14, 18, 0.95);
+    --editor-chrome-float-bg: rgba(10, 10, 12, 0.88);
+    --editor-chrome-border: rgba(255, 255, 255, 0.08);
+    --editor-chrome-accent-soft: rgba(255, 255, 255, 0.08);
+    --editor-chrome-accent-border: rgba(255, 255, 255, 0.16);
+  }
+
+  .editor-workspace-shell {
+    background: var(--editor-theme-bg, #eef0f4);
+    transition: background 0.25s ease;
+  }
+
+  .editor-chrome-bar {
+    background-color: var(--editor-chrome-bar-bg);
+    border-color: var(--editor-chrome-border);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+
+  .editor-chrome-rail {
+    background-color: var(--editor-chrome-rail-bg);
+    border-color: var(--editor-chrome-border);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+
+  .editor-chrome-panel {
+    background-color: var(--editor-chrome-panel-bg);
+    border-color: var(--editor-chrome-border);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+
+  .editor-chrome-float {
+    background-color: var(--editor-chrome-float-bg);
+    border-color: var(--editor-chrome-border);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+  }
+
+  :root[data-editor-theme='synced'] .editor-chrome-bar,
+  :root[data-editor-theme='synced'] .editor-chrome-rail,
+  :root[data-editor-theme='synced'] .editor-chrome-panel {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  :root[data-editor-theme='synced'] .editor-chrome-float {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 36px rgba(0, 0, 0, 0.32);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #08080a;
+    color: #f8fafc;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Ultra-sleek minimalist smooth scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+
+/* Liquid Glassmorphism System Utilities */
+.glass-panel {
+  background: rgba(16, 18, 24, 0.52);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.5rem; /* 24px organic curve */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-panel-subtle {
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.25rem; /* 20px */
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.25rem; /* 20px organic curve */
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px -12px rgba(0, 0, 0, 0.55), 0 0 25px -5px var(--theme-ambient-1, rgba(255, 255, 255, 0.08));
+}
+
+@media (min-width: 640px) {
+  .card-span-2 {
+    grid-column: span 2 / span 2 !important;
+  }
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 0.875rem; /* 14px */
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0 2px var(--theme-ambient-1, rgba(255, 255, 255, 0.1));
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 0.875rem; /* 14px */
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.45);
+}
+
+.glass-button-primary {
+  background: #ffffff;
+  color: #08080a;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 0.875rem;
+  font-weight: 600;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.12);
+}
+
+.glass-button-primary:hover {
+  background: #f1f5f9;
+  border-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255, 255, 255, 0.22);
+}
+
+/* Ambient Viewport Glow Animations */
+@keyframes ambientDriftSlow {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.08);
+  }
+  66% {
+    transform: translate(-25px, 25px) scale(0.96);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes ambientDriftReverse {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-35px, 25px) scale(0.94);
+  }
+  66% {
+    transform: translate(20px, -30px) scale(1.06);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.ambient-orb-1 {
+  animation: ambientDriftSlow 24s ease-in-out infinite;
+}
+
+.ambient-orb-2 {
+  animation: ambientDriftReverse 28s ease-in-out infinite;
+}
+
+.ambient-orb-3 {
+  animation: ambientDriftSlow 32s ease-in-out infinite alternate;
+}
+
+.canvas-checkerboard {
+  background-color: #0d0e12;
+  background-image: 
+    linear-gradient(45deg, #13141b 25%, transparent 25%),
+    linear-gradient(-45deg, #13141b 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #13141b 75%),
+    linear-gradient(-45deg, transparent 75%, #13141b 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* Scribe Studio Image Animation Keyframes */
+@keyframes scribeAnimPopIn {
+  0% { opacity: 0; transform: scale(0); }
+  65% { opacity: 1; transform: scale(1.12); }
+  85% { opacity: 1; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes scribeAnimFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes scribeAnimSlideInLeft {
+  0% { opacity: 0; transform: translateX(-48px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes scribeAnimSlideInRight {
+  0% { opacity: 0; transform: translateX(48px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes scribeAnimSlideInUp {
+  0% { opacity: 0; transform: translateY(42px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes scribeAnimSlideInDown {
+  0% { opacity: 0; transform: translateY(-42px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes scribeAnimZoomIn {
+  0% { opacity: 0; transform: scale(0.35); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes scribeAnimBounceIn {
+  0% { opacity: 0; transform: scale(0.2); }
+  48% { opacity: 1; transform: scale(1.16); }
+  68% { opacity: 1; transform: scale(0.91); }
+  84% { opacity: 1; transform: scale(1.05); }
+  94% { opacity: 1; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes scribeAnimFlipInX {
+  0% { opacity: 0; transform: perspective(600px) rotateX(90deg) scale(0.92); }
+  60% { opacity: 1; transform: perspective(600px) rotateX(-12deg) scale(1.02); }
+  100% { opacity: 1; transform: perspective(600px) rotateX(0deg) scale(1); }
+}
+@keyframes scribeAnimFlipInY {
+  0% { opacity: 0; transform: perspective(600px) rotateY(90deg) scale(0.92); }
+  60% { opacity: 1; transform: perspective(600px) rotateY(-12deg) scale(1.02); }
+  100% { opacity: 1; transform: perspective(600px) rotateY(0deg) scale(1); }
+}
+@keyframes scribeAnimWipeReveal {
+  0% { opacity: 1; clip-path: inset(0 100% 0 0); }
+  100% { opacity: 1; clip-path: inset(0 0% 0 0); }
+}
+
+@keyframes scribeAnimFadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes scribeAnimSlideOutLeft {
+  0% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(-48px); }
+}
+@keyframes scribeAnimSlideOutRight {
+  0% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(48px); }
+}
+@keyframes scribeAnimSlideOutUp {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-42px); }
+}
+@keyframes scribeAnimSlideOutDown {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(42px); }
+}
+@keyframes scribeAnimZoomOut {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.65); }
+}
+@keyframes scribeAnimShrinkOut {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0); }
+}
+@keyframes scribeAnimFlipOutX {
+  0% { opacity: 1; transform: perspective(600px) rotateX(0deg) scale(1); }
+  100% { opacity: 0; transform: perspective(600px) rotateX(90deg) scale(0.88); }
+}
+@keyframes scribeAnimFlipOutY {
+  0% { opacity: 1; transform: perspective(600px) rotateY(0deg) scale(1); }
+  100% { opacity: 0; transform: perspective(600px) rotateY(90deg) scale(0.88); }
+}
+@keyframes scribeAnimWipeHide {
+  0% { opacity: 1; clip-path: inset(0 0 0 0); }
+  92% { opacity: 1; clip-path: inset(0 0 0 100%); }
+  100% { opacity: 0; clip-path: inset(0 0 0 100%); }
+}
+
+@keyframes scribeAnimFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes scribeAnimPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+@keyframes scribeAnimSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes scribeAnimWobble {
+  0%, 100% { transform: rotate(0deg) translateX(0px); }
+  25% { transform: rotate(-6deg) translateX(-4px); }
+  75% { transform: rotate(6deg) translateX(4px); }
+}
+@keyframes scribeAnimDrift {
+  0%, 100% { transform: translate(0px, 0px); }
+  25% { transform: translate(7px, -4px); }
+  50% { transform: translate(0px, -6px); }
+  75% { transform: translate(-7px, -2px); }
+}
+@keyframes scribeAnimHeartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.14); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+@keyframes scribeAnimShimmerGlow {
+  0%, 100% { opacity: 1; filter: brightness(1) drop-shadow(0 0 0px rgba(255,255,255,0)); }
+  50% { opacity: 0.92; filter: brightness(1.24) drop-shadow(0 0 12px rgba(125,211,252,0.72)); }
+}
+@keyframes scribeAnimSwing {
+  0%, 100% { transform-origin: top center; transform: rotate(0deg); }
+  25% { transform-origin: top center; transform: rotate(10deg); }
+  75% { transform-origin: top center; transform: rotate(-10deg); }
+}
+
