@@ -34,7 +34,7 @@ export interface GoogleJwtPayload {
 }
 
 // Hardcoded developer Client ID as configured
-export const GOOGLE_CLIENT_ID = "763145999539-tn1sleh8rkjti2fqv6eg0erbgjes8hkm.apps.googleusercontent.com";
+export const GOOGLE_CLIENT_ID = "522842438682-p5dnk2v5qh2dd98mg71qvt17aogeokc2.apps.googleusercontent.com";
 
 const STORAGE_KEYS = {
   CLIENT_ID: 'scribe_google_client_id',
