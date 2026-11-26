@@ -32,7 +32,7 @@ if (typeof globalThis.localStorage === 'undefined') {
 }
 
 test('Google Drive Sync settings getters, setters, and developer Client ID', () => {
-  assert.equal(GOOGLE_CLIENT_ID, '763145999539-tn1sleh8rkjti2fqv6eg0erbgjes8hkm.apps.googleusercontent.com');
+  assert.equal(GOOGLE_CLIENT_ID, '522842438682-p5dnk2v5qh2dd98mg71qvt17aogeokc2.apps.googleusercontent.com');
 
   setStoredGoogleClientId('custom-test-client-id.apps.googleusercontent.com');
   assert.equal(getStoredGoogleClientId(), 'custom-test-client-id.apps.googleusercontent.com');
