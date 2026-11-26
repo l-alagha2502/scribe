@@ -40,6 +40,9 @@ const STORAGE_KEYS = {
   CLIENT_ID: 'scribe_google_client_id',
   AUTO_SYNC: 'scribe_auto_sync_drive',
   USER_CACHE: 'scribe_drive_user_cache',
+  ACCESS_TOKEN: 'scribe_drive_access_token',
+  TOKEN_EXPIRES_AT: 'scribe_drive_token_expires_at',
+  CONNECTED: 'scribe_drive_connected',
   MOCK_DRIVE: 'scribe_mock_drive_store',
   USE_SIMULATION: 'scribe_use_drive_simulation',
 } as const;
@@ -47,7 +50,7 @@ const STORAGE_KEYS = {
 const DRIVE_FOLDER_NAME = 'Scribe Design Studio';
 export const DRIVE_SCOPES = 'openid profile email https://www.googleapis.com/auth/drive.file';
 
-// In-memory token storage (never saved to localStorage for security)
+// Persisting the token allows Drive operations to continue after a page refresh.
 let inMemoryAccessToken: string | null = null;
 let tokenExpiresAt: number = 0;
 let tokenClientInstance: any = null;
@@ -135,6 +138,69 @@ export function setDriveSimulationMode(sim: boolean): void {
   localStorage.setItem(STORAGE_KEYS.USE_SIMULATION, sim ? 'true' : 'false');
 }
 
+function persistDriveSession(user: DriveUser, accessToken: string, expiresAt: number): void {
+  inMemoryAccessToken = accessToken;
+  tokenExpiresAt = expiresAt;
+  localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+  localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRES_AT, String(expiresAt));
+  localStorage.setItem(STORAGE_KEYS.USER_CACHE, JSON.stringify(user));
+  localStorage.setItem(STORAGE_KEYS.CONNECTED, 'true');
+}
+
+function clearDriveSession(notify = true): void {
+  inMemoryAccessToken = null;
+  tokenExpiresAt = 0;
+  cachedDriveFolderId = null;
+  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRES_AT);
+  localStorage.removeItem(STORAGE_KEYS.CONNECTED);
+  localStorage.removeItem(STORAGE_KEYS.USER_CACHE);
+  if (notify) notifyListeners('guest', null);
+}
+
+function restoreDriveSession(): boolean {
+  if (inMemoryAccessToken) {
+    if (Date.now() < tokenExpiresAt - 30000) return true;
+    clearDriveSession();
+    return false;
+  }
+  if (localStorage.getItem(STORAGE_KEYS.CONNECTED) !== 'true') return false;
+
+  const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  const expiresAt = Number(localStorage.getItem(STORAGE_KEYS.TOKEN_EXPIRES_AT));
+  if (!accessToken || !Number.isFinite(expiresAt) || Date.now() >= expiresAt - 30000) {
+    clearDriveSession();
+    return false;
+  }
+
+  inMemoryAccessToken = accessToken;
+  tokenExpiresAt = expiresAt;
+  return true;
+}
+
+function requireDriveAccessToken(): string {
+  if (!inMemoryAccessToken && localStorage.getItem(STORAGE_KEYS.CONNECTED) !== 'true') {
+    throw new Error('Not connected to Google Drive. Connect your account to continue.');
+  }
+  if (!restoreDriveSession() || !inMemoryAccessToken) {
+    clearDriveSession();
+    throw new Error('Your Google Drive session has expired. Reconnect to continue.');
+  }
+  return inMemoryAccessToken;
+}
+
+async function fetchDriveApi(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+  const token = requireDriveAccessToken();
+  const headers = new Headers(init.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+  const response = await fetch(input, { ...init, headers });
+  if (response.status === 401) {
+    clearDriveSession();
+    throw new Error('Your Google Drive session has expired or was revoked. Reconnect to continue.');
+  }
+  return response;
+}
+
 // ------------------- Script Loading & GIS Token Client -------------------
 
 let gisScriptLoadingPromise: Promise<boolean> | null = null;
@@ -218,9 +284,7 @@ export async function connectGoogleDrive(
       picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=face',
     };
 
-    inMemoryAccessToken = 'mock_gdrive_access_token_' + Date.now();
-    tokenExpiresAt = Date.now() + 3600000;
-    localStorage.setItem(STORAGE_KEYS.USER_CACHE, JSON.stringify(mockUser));
+    persistDriveSession(mockUser, 'mock_gdrive_access_token_' + Date.now(), Date.now() + 3600000);
     notifyListeners('connected', mockUser);
     return { success: true, user: mockUser };
   }
@@ -246,9 +310,9 @@ export async function connectGoogleDrive(
             return;
           }
 
-          inMemoryAccessToken = tokenResponse.access_token;
+          const accessToken = tokenResponse.access_token as string;
           const expiresInSec = Number(tokenResponse.expires_in) || 3599;
-          tokenExpiresAt = Date.now() + expiresInSec * 1000;
+          const expiresAt = Date.now() + expiresInSec * 1000;
 
           // 1. Try decoding ID token if present in response
           let extractedUser: DriveUser | null = null;
@@ -264,8 +328,8 @@ export async function connectGoogleDrive(
           }
 
           // 2. Fetch or augment with userinfo endpoint
-          if ((!extractedUser || !extractedUser.picture) && inMemoryAccessToken) {
-            const fetchedUser = await fetchGoogleUserProfile(inMemoryAccessToken);
+          if ((!extractedUser || !extractedUser.picture) && accessToken) {
+            const fetchedUser = await fetchGoogleUserProfile(accessToken);
             if (fetchedUser) {
               extractedUser = fetchedUser;
             }
@@ -279,7 +343,7 @@ export async function connectGoogleDrive(
             };
           }
 
-          localStorage.setItem(STORAGE_KEYS.USER_CACHE, JSON.stringify(extractedUser));
+          persistDriveSession(extractedUser, accessToken, expiresAt);
           notifyListeners('connected', extractedUser);
           resolve({ success: true, user: extractedUser });
         },
@@ -320,20 +384,18 @@ export function disconnectGoogleDrive(): void {
     }
   }
 
-  inMemoryAccessToken = null;
-  tokenExpiresAt = 0;
-  localStorage.removeItem(STORAGE_KEYS.USER_CACHE);
-  notifyListeners('guest', null);
+  clearDriveSession();
 }
 
 export function isDriveAuthenticated(): boolean {
-  if (!inMemoryAccessToken) return false;
-  return Date.now() < tokenExpiresAt - 30000; // 30s buffer
+  return restoreDriveSession();
 }
 
 export function getCurrentSyncState(): { state: SyncState; user: DriveUser | null } {
   if (isDriveAuthenticated()) {
-    return { state: 'connected', user: getCachedDriveUser() };
+    const user = getCachedDriveUser();
+    if (user) return { state: 'connected', user };
+    clearDriveSession();
   }
   return { state: 'guest', user: null };
 }
@@ -353,15 +415,9 @@ export async function getOrCreateScribeFolder(): Promise<string> {
     return cachedDriveFolderId;
   }
 
-  if (!isDriveAuthenticated() || !inMemoryAccessToken) {
-    throw new Error('Not authenticated with Google Drive.');
-  }
-
   // 1. Search for existing folder
   const query = encodeURIComponent(`name = '${DRIVE_FOLDER_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`);
-  const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id, name)`, {
-    headers: { Authorization: `Bearer ${inMemoryAccessToken}` },
-  });
+  const searchRes = await fetchDriveApi(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id, name)`);
 
   if (searchRes.ok) {
     const data = await searchRes.json();
@@ -372,10 +428,9 @@ export async function getOrCreateScribeFolder(): Promise<string> {
   }
 
   // 2. Create the folder if not found
-  const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+  const createRes = await fetchDriveApi('https://www.googleapis.com/drive/v3/files', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${inMemoryAccessToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -402,14 +457,13 @@ export async function uploadProjectToDrive(
   allAssets: AssetRecord[] = [],
   allFonts: CustomFontRecord[] = []
 ): Promise<{ fileId: string; modifiedTime: string }> {
-  notifyListeners('syncing', getCachedDriveUser());
-
   const pkg = createScribePackage(project, allAssets, allFonts);
   const pkgContent = JSON.stringify(pkg, null, 2);
   const fileName = `${project.name || 'Untitled'}.scribe`;
 
   // Simulation mode
-  if (isDriveSimulationMode() || !inMemoryAccessToken) {
+  if (isDriveSimulationMode()) {
+    notifyListeners('syncing', getCachedDriveUser());
     await new Promise((r) => setTimeout(r, 700)); // realistic network latency
     const mockBackups = getMockDriveStore();
     const existingIdx = mockBackups.findIndex((b) => b.projectId === project.id || b.name === fileName);
@@ -438,13 +492,14 @@ export async function uploadProjectToDrive(
     return { fileId: item.id, modifiedTime: nowIso };
   }
 
+  requireDriveAccessToken();
+  notifyListeners('syncing', getCachedDriveUser());
+
   const folderId = await getOrCreateScribeFolder();
 
   // Search if file already exists in folder
   const fileQuery = encodeURIComponent(`'${folderId}' in parents and name = '${fileName.replace(/'/g, "\\'")}' and trashed = false`);
-  const existingRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${fileQuery}&fields=files(id)`, {
-    headers: { Authorization: `Bearer ${inMemoryAccessToken}` },
-  });
+  const existingRes = await fetchDriveApi(`https://www.googleapis.com/drive/v3/files?q=${fileQuery}&fields=files(id)`);
 
   let existingFileId: string | null = null;
   if (existingRes.ok) {
@@ -485,10 +540,9 @@ export async function uploadProjectToDrive(
     ? `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=multipart&fields=id,name,modifiedTime`
     : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime`;
 
-  const uploadRes = await fetch(uploadEndpoint, {
+  const uploadRes = await fetchDriveApi(uploadEndpoint, {
     method: existingFileId ? 'PATCH' : 'POST',
     headers: {
-      Authorization: `Bearer ${inMemoryAccessToken}`,
       'Content-Type': `multipart/related; boundary=${boundary}`,
     },
     body: multipartRequestBody,
@@ -509,15 +563,13 @@ export async function uploadProjectToDrive(
  * Lists all .scribe design backups in the user's Scribe folder.
  */
 export async function listDriveBackups(): Promise<DriveBackupItem[]> {
-  if (isDriveSimulationMode() || !inMemoryAccessToken) {
+  if (isDriveSimulationMode()) {
     return getMockDriveStore();
   }
 
   const folderId = await getOrCreateScribeFolder();
   const query = encodeURIComponent(`'${folderId}' in parents and trashed = false and (name contains '.scribe' or mimeType = 'application/x-scribe-project')`);
-  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id, name, size, modifiedTime, webViewLink, properties)&orderBy=modifiedTime desc`, {
-    headers: { Authorization: `Bearer ${inMemoryAccessToken}` },
-  });
+  const res = await fetchDriveApi(`https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id, name, size, modifiedTime, webViewLink, properties)&orderBy=modifiedTime desc`);
 
   if (!res.ok) {
     throw new Error('Failed to retrieve backup list from Google Drive.');
@@ -541,15 +593,13 @@ export async function listDriveBackups(): Promise<DriveBackupItem[]> {
  * Downloads and parses a remote .scribe project from Google Drive.
  */
 export async function downloadProjectFromDrive(fileId: string): Promise<ScribeProjectPackage> {
-  if (isDriveSimulationMode() || !inMemoryAccessToken) {
+  if (isDriveSimulationMode()) {
     const raw = localStorage.getItem(`mock_drive_content_${fileId}`);
     if (!raw) throw new Error('Simulated file not found in local mock cloud store.');
     return parseScribePackage(raw);
   }
 
-  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-    headers: { Authorization: `Bearer ${inMemoryAccessToken}` },
-  });
+  const res = await fetchDriveApi(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
 
   if (!res.ok) {
     throw new Error(`Failed to download project file from Google Drive: ${res.statusText}`);
@@ -563,16 +613,15 @@ export async function downloadProjectFromDrive(fileId: string): Promise<ScribePr
  * Deletes a backup from Google Drive.
  */
 export async function deleteDriveBackup(fileId: string): Promise<void> {
-  if (isDriveSimulationMode() || !inMemoryAccessToken) {
+  if (isDriveSimulationMode()) {
     const mockBackups = getMockDriveStore().filter((b) => b.id !== fileId);
     saveMockDriveStore(mockBackups);
     localStorage.removeItem(`mock_drive_content_${fileId}`);
     return;
   }
 
-  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+  const res = await fetchDriveApi(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${inMemoryAccessToken}` },
   });
 
   if (!res.ok && res.status !== 404) {

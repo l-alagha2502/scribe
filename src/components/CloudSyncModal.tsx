@@ -110,7 +110,9 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
       setBackups(list);
       onBackupsUpdated?.();
     } catch (err: any) {
+      setBackups([]);
       console.warn('Could not fetch backups:', err);
+      showNotification(err.message || 'Could not fetch backups from Google Drive.', 'error');
     } finally {
       setIsLoadingBackups(false);
     }
