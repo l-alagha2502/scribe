@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Terms of Service for Scribe Design Studio and Scribe Convert." />
+    <title>Scribe Terms of Service</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --black: #000000;
+        --surface: #070707;
+        --white: #ffffff;
+        --line: #222222;
+        --muted: #8a8a8a;
+        --acid: #d7ff3f;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--black);
+        color: var(--white);
+        font-family: 'Space Grotesk', sans-serif;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--black);
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.32;
+        background-image:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: linear-gradient(to bottom, #000 0%, transparent 92%);
+      }
+
+      .topbar {
+        height: 80px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 clamp(20px, 5vw, 72px);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+        color: var(--white);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 19px;
+        letter-spacing: -0.05em;
+      }
+
+      .brand-mark {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+      }
+
+      .brand-mark img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+        filter: invert(1);
+      }
+
+      .dot {
+        color: var(--acid);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .nav a {
+        color: var(--muted);
+        text-decoration: none;
+        padding: 9px 14px;
+        font: 500 12px 'DM Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: 1px solid transparent;
+        transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+      }
+
+      .nav a:hover {
+        color: var(--white);
+        border-color: var(--line);
+      }
+
+      .nav a.active {
+        background: var(--white);
+        color: var(--black);
+      }
+
+      main {
+        width: min(860px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: clamp(48px, 8vh, 88px) 0 96px;
+        flex: 1;
+      }
+
+      .eyebrow {
+        font: 11px 'DM Mono', monospace;
+        color: var(--acid);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        font-size: clamp(44px, 7vw, 76px);
+        font-weight: 700;
+        letter-spacing: -0.07em;
+        line-height: 0.92;
+        margin: 0 0 20px;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        font: 11px 'DM Mono', monospace;
+        color: var(--muted);
+        padding-bottom: 36px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 44px;
+      }
+
+      .section {
+        padding: 28px 0;
+        border-bottom: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 32px;
+      }
+
+      .section:last-child {
+        border-bottom: 0;
+      }
+
+      .section-num {
+        font: 11px 'DM Mono', monospace;
+        color: var(--muted);
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .section h2 {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 1.25;
+      }
+
+      .section-body p {
+        margin: 0 0 14px;
+        color: #c8c8c8;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+
+      .section-body p:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-body ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+        color: #c8c8c8;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+
+      .section-body li {
+        margin-bottom: 8px;
+      }
+
+      .section-body strong {
+        color: var(--white);
+        font-weight: 600;
+      }
+
+      .section-body a {
+        color: var(--acid);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(215, 255, 63, 0.35);
+      }
+
+      .section-body a:hover {
+        border-bottom-color: var(--acid);
+      }
+
+      .footer {
+        border-top: 1px solid var(--line);
+        padding: 24px clamp(20px, 5vw, 72px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        font: 11px 'DM Mono', monospace;
+        color: var(--muted);
+      }
+
+      .footer a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        color: var(--white);
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          height: auto;
+          padding: 16px 20px;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .nav {
+          width: 100%;
+          border-top: 1px solid var(--line);
+          padding-top: 10px;
+          justify-content: flex-start;
+        }
+
+        .section {
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+
+        .footer {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="https://scribe.vastx.app" aria-label="Scribe home">
+        <span class="brand-mark"><img src="./logo.svg" alt="Scribe logo" /></span>
+        <span>Scribe<span class="dot">.</span></span>
+      </a>
+      <nav class="nav" aria-label="Legal navigation">
+        <a class="active" href="https://scribe.vastx.app/termsofservice" aria-current="page">Terms of Service</a>
+        <a href="https://scribe.vastx.app/privacypolicy">Privacy Policy</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="eyebrow">LEGAL / USAGE &amp; TERMS</div>
+      <h1>Terms of Service<span class="dot">.</span></h1>
+      <div class="meta">
+        <span>EFFECTIVE DATE: NOVEMBER 26, 2026</span>
+        <span>DOMAIN: SCRIBE.VASTX.APP</span>
+      </div>
+
+      <section class="section">
+        <div>
+          <span class="section-num">01 / ACCEPTANCE</span>
+          <h2>Agreement to Terms</h2>
+        </div>
+        <div class="section-body">
+          <p>By accessing or using <strong>scribe.vastx.app</strong>, Scribe Design Studio, or Scribe Convert (collectively, the "Services"), you agree to these Terms of Service and our <a href="https://scribe.vastx.app/privacypolicy">Privacy Policy</a>.</p>
+          <p>If you do not agree with these terms, please do not use the Services.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div>
+          <span class="section-num">02 / RESPONSIBLE USE</span>
+          <h2>Your Content &amp; Conduct</h2>
+        </div>
+        <div class="section-body">
+          <p>You retain full ownership and responsibility for all files, designs, media, and documents you create or convert using the Services.</p>
+          <ul>
+            <li><strong>Lawful Usage:</strong> You agree to use Scribe only for lawful purposes and on content you have the right to edit, convert, or process.</li>
+            <li><strong>No Abuse or Disruption:</strong> You may not attempt to interfere with, scrape, reverse-engineer, or disrupt the availability or security of the Services.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section">
+        <div>
+          <span class="section-num">03 / LOCAL PROCESSING</span>
+          <h2>No Warranty on Output</h2>
+        </div>
+        <div class="section-body">
+          <p>Scribe runs tools and conversions locally inside your web browser. The Services are provided on an <strong>"AS IS"</strong> and <strong>"AS AVAILABLE"</strong> basis without warranties of any kind, express or implied.</p>
+          <p>Always keep backups of important source files before running batch edits or format conversions.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div>
+          <span class="section-num">04 / LIABILITY</span>
+          <h2>Limitation of Liability</h2>
+        </div>
+        <div class="section-body">
+          <p>To the fullest extent permitted by applicable law, Scribe and its creators will not be liable for any indirect, incidental, special, consequential, or data-loss damages arising from your use of or inability to use the Services.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div>
+          <span class="section-num">05 / CHANGES &amp; CONTACT</span>
+          <h2>Updates &amp; Support</h2>
+        </div>
+        <div class="section-body">
+          <p>We may update these Terms of Service as Scribe evolves. Continued use of the Services after changes are published constitutes acceptance of the updated terms.</p>
+          <p>For questions or support regarding these terms, visit <a href="https://vastx.app" target="_blank" rel="noopener noreferrer">vastx.app</a>.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>SCRIBE DESIGN STUDIO — TERMS OF SERVICE</span>
+      <span><a href="https://scribe.vastx.app">RETURN TO SCRIBE ↗</a></span>
+    </footer>
+  </body>
+</html>
