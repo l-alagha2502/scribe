@@ -11,12 +11,12 @@ let pdfLibPromise;
 let pdfJsPromise;
 
 function setFavicon() {
-  favicon.href = '/public/favicon.svg';
+  if (favicon) favicon.href = './favicon.svg';
 }
 setFavicon();
 
 function home() {
-  app.innerHTML = `<section class="home-hero"><img class="home-logo" src="/public/logo.svg" alt="Scribe" /><h1>Scribe<span class="dot">.</span></h1><p>Private, Cloudless, Limitless File conversion tool</p><nav class="category-links" aria-label="Conversion categories"><a href="#/image">Image</a><a href="#/video">Video</a><a href="#/audio">Audio</a><a href="#/docs">Docs</a></nav></section>`;
+  app.innerHTML = `<section class="home-hero"><img class="home-logo" src="./logo.svg" alt="Scribe" /><h1>Scribe<span class="dot">.</span></h1><p>Private, Cloudless, Limitless File conversion tool</p><nav class="category-links" aria-label="Conversion categories"><a href="#/image">Image</a><a href="#/video">Video</a><a href="#/audio">Audio</a><a href="#/docs">Docs</a></nav></section>`;
 }
 
 function toolPage(kind) {
