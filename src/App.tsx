@@ -38,7 +38,6 @@ import {
   getAllAssets,
   getAllBrands,
   getAllCustomFonts,
-  seedInitialDataIfEmpty,
   loadSavedCustomFonts,
   saveProject,
   deleteProject,
@@ -72,7 +71,6 @@ export default function App() {
   // Initialize and load IndexedDB data
   const loadAllData = useCallback(async () => {
     try {
-      await seedInitialDataIfEmpty();
       await loadSavedCustomFonts();
 
       const [projs, asts, brnds, fnts] = await Promise.all([

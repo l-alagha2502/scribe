@@ -37,7 +37,7 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
 }) => {
   const [activeTool, setActiveTool] = useState<'bg-remove' | 'eraser' | 'enhance'>('bg-remove');
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>('image.png');
+  const [fileName, setFileName] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -66,13 +66,6 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
       eraserCleanupRef.current?.();
     };
   }, []);
-
-  useEffect(() => {
-    if (!imageSrc && isOpen) {
-      setImageSrc('/assets/aistudio/scribe-logo-noir_53887179.png');
-      setFileName('scribe_emblem.png');
-    }
-  }, [isOpen, imageSrc]);
 
   useEffect(() => {
     if (!imageSrc || !canvasRef.current) return;
@@ -298,10 +291,11 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
           {/* Left Canvas Preview Area */}
           <div className="md:col-span-2 flex flex-col gap-3">
             <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-              <span className="truncate max-w-xs">{fileName}</span>
+              <span className="truncate max-w-xs">{fileName || 'No image selected'}</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={resetCanvasToOriginal}
+                  disabled={!imageSrc}
                   className="flex items-center gap-1 hover:text-white px-2 py-1 rounded bg-white/[0.03] border border-white/[0.06]"
                 >
                   <RefreshCw className="w-3 h-3" />
@@ -330,6 +324,20 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
                   activeTool === 'eraser' ? 'cursor-crosshair' : 'cursor-default'
                 }`}
               />
+              {!imageSrc && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center text-xs text-slate-400">
+                  <span>Select an image to get started.</span>
+                  <label className="cursor-pointer rounded-lg border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-slate-200 hover:bg-white/[0.1]">
+                    Upload Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              )}
               {isProcessing && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center gap-2 text-white text-xs font-mono">
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -417,6 +425,7 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
 
                   <button
                     onClick={handleApplyBgRemoval}
+                    disabled={!imageSrc}
                     className="w-full py-2 px-3 rounded-lg bg-white/[0.08] hover:bg-white text-slate-200 hover:text-[#08080a] text-xs font-medium border border-white/[0.1] transition-all flex items-center justify-center gap-1.5"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
@@ -507,6 +516,7 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
 
                   <button
                     onClick={handleApplyEnhancements}
+                    disabled={!imageSrc}
                     className="w-full mt-2 py-1.5 px-3 rounded-lg bg-white/[0.08] hover:bg-white text-slate-200 hover:text-[#08080a] text-xs font-medium border border-white/[0.1] transition-all"
                   >
                     Apply Enhancements
@@ -519,6 +529,7 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
             <div className="space-y-2 pt-3 border-t border-white/[0.06]">
               <button
                 onClick={handleOpenInEditor}
+                disabled={!imageSrc}
                 className="w-full py-2 px-3 rounded-lg bg-white text-[#08080a] hover:bg-slate-200 font-medium text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <span>Open in Canvas</span>
@@ -528,6 +539,7 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={handleSaveToAssets}
+                  disabled={!imageSrc}
                   className="py-1.5 px-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white text-xs font-medium border border-white/[0.06] transition-colors flex items-center justify-center gap-1.5"
                 >
                   {savedSuccess ? (
@@ -544,6 +556,7 @@ export const QuickImageModal: React.FC<QuickImageModalProps> = ({
                 </button>
                 <button
                   onClick={handleDownload}
+                  disabled={!imageSrc}
                   className="py-1.5 px-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white text-xs font-medium border border-white/[0.06] transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" />
