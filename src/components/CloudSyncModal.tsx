@@ -59,8 +59,9 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   onProjectImported,
   onBackupsUpdated,
 }) => {
-  const [syncState, setSyncState] = useState<SyncState>('guest');
-  const [currentUser, setCurrentUser] = useState<DriveUser | null>(null);
+  const [initialDriveState] = useState(() => getCurrentSyncState());
+  const [syncState, setSyncState] = useState<SyncState>(initialDriveState.state);
+  const [currentUser, setCurrentUser] = useState<DriveUser | null>(initialDriveState.user);
   const [autoSync, setAutoSync] = useState(false);
   const [clientIdInput, setClientIdInput] = useState('');
   const [showConfig, setShowConfig] = useState(false);

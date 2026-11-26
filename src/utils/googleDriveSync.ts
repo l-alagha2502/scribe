@@ -139,12 +139,15 @@ export function setDriveSimulationMode(sim: boolean): void {
 }
 
 function persistDriveSession(user: DriveUser, accessToken: string, expiresAt: number): void {
-  inMemoryAccessToken = accessToken;
-  tokenExpiresAt = expiresAt;
+  // Keep the connected marker as the final write so a partial storage update
+  // can never be restored as a complete session after a refresh.
+  localStorage.removeItem(STORAGE_KEYS.CONNECTED);
+  localStorage.setItem(STORAGE_KEYS.USER_CACHE, JSON.stringify(user));
   localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
   localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRES_AT, String(expiresAt));
-  localStorage.setItem(STORAGE_KEYS.USER_CACHE, JSON.stringify(user));
   localStorage.setItem(STORAGE_KEYS.CONNECTED, 'true');
+  inMemoryAccessToken = accessToken;
+  tokenExpiresAt = expiresAt;
 }
 
 function clearDriveSession(notify = true): void {
@@ -159,8 +162,10 @@ function clearDriveSession(notify = true): void {
 }
 
 function restoreDriveSession(): boolean {
+  if (typeof window === 'undefined') return false;
+
   if (inMemoryAccessToken) {
-    if (Date.now() < tokenExpiresAt - 30000) return true;
+    if (Date.now() < tokenExpiresAt - 30000 && getCachedDriveUser()) return true;
     clearDriveSession();
     return false;
   }
@@ -168,7 +173,12 @@ function restoreDriveSession(): boolean {
 
   const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   const expiresAt = Number(localStorage.getItem(STORAGE_KEYS.TOKEN_EXPIRES_AT));
-  if (!accessToken || !Number.isFinite(expiresAt) || Date.now() >= expiresAt - 30000) {
+  if (
+    !accessToken ||
+    !Number.isFinite(expiresAt) ||
+    Date.now() >= expiresAt - 30000 ||
+    !getCachedDriveUser()
+  ) {
     clearDriveSession();
     return false;
   }
@@ -240,7 +250,7 @@ export async function loadGisScript(): Promise<boolean> {
 }
 
 /**
- * Extracts and persists user profile from Google userinfo endpoint or JWT token
+ * Extracts the user profile from Google's userinfo endpoint.
  */
 export async function fetchGoogleUserProfile(accessToken: string): Promise<DriveUser | null> {
   try {
@@ -249,13 +259,11 @@ export async function fetchGoogleUserProfile(accessToken: string): Promise<Drive
     });
     if (res.ok) {
       const info = await res.json();
-      const user: DriveUser = {
+      return {
         name: info.name || info.given_name || 'Google User',
         email: info.email || 'user@google.com',
         picture: info.picture,
       };
-      localStorage.setItem(STORAGE_KEYS.USER_CACHE, JSON.stringify(user));
-      return user;
     }
   } catch (err) {
     console.warn('Could not fetch user profile from userinfo:', err);
@@ -349,6 +357,16 @@ export async function connectGoogleDrive(
         },
         error_callback: (err: any) => {
           console.error('GIS Error Callback:', err);
+          // A popup-close/COOP diagnostic must not discard an already-valid
+          // Drive session (the browser warning itself is not an auth failure).
+          if (restoreDriveSession()) {
+            const user = getCachedDriveUser();
+            if (user) {
+              notifyListeners('connected', user);
+              resolve({ success: true, user });
+              return;
+            }
+          }
           notifyListeners('error', null);
           resolve({ success: false, error: err?.message || 'Google Sign-In popup was closed or cancelled.' });
         },
@@ -658,4 +676,9 @@ function getMockDriveStore(): DriveBackupItem[] {
 
 function saveMockDriveStore(items: DriveBackupItem[]): void {
   localStorage.setItem(STORAGE_KEYS.MOCK_DRIVE, JSON.stringify(items));
+}
+
+// Hydrate an unexpired auth session before UI components initialize their state.
+if (typeof window !== 'undefined') {
+  restoreDriveSession();
 }
